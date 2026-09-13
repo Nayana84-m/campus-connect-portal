@@ -120,48 +120,6 @@
             </div>
         </section>
 
-        <!-- LAB 3: Interactive Campus Announcements (DOM Selection & Event Handling) -->
-        <section id="notices" class="section-container">
-            <h2 id="labHeading" class="section-title">Interactive Campus Announcements</h2>
-            <p class="section-subtitle">Real-time DOM Interaction & Event Handling (Lab 3)</p>
-
-            <div class="notice-board-card">
-                <div class="notice-controls">
-                    <div class="input-group">
-                        <input type="text" id="noticeInput" placeholder="Enter a new notice or announcement..." class="custom-input">
-                        <button id="addNoticeBtn" class="btn-primary-action">Add Notice</button>
-                        <button id="toggleStyleBtn" class="btn-secondary-action">Toggle Highlight Style</button>
-                    </div>
-                    
-                    <!-- Real-time Input Display -->
-                    <div class="live-preview-box">
-                        <strong>Live Input Preview:</strong> <span id="livePreviewText">Start typing above to see live preview...</span>
-                    </div>
-                </div>
-
-                <!-- Dynamic List of Items -->
-                <div class="list-container">
-                    <div class="list-header">
-                        <h3>Current Notices (<span id="noticeCount">3</span>)</h3>
-                    </div>
-                    <ul id="noticeList" class="notice-list">
-                        <li class="notice-item">
-                            <span>📢 Welcome to Campus Connect Portal CS3301!</span>
-                            <button class="remove-btn" aria-label="Remove notice">&times; Remove</button>
-                        </li>
-                        <li class="notice-item">
-                            <span>📝 Mid-semester Lab Evaluations start next week.</span>
-                            <button class="remove-btn" aria-label="Remove notice">&times; Remove</button>
-                        </li>
-                        <li class="notice-item">
-                            <span>💡 Submit your Full Stack Development assignments on time.</span>
-                            <button class="remove-btn" aria-label="Remove notice">&times; Remove</button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
         <!-- Auth Module Registration Mount -->
         <section id="register">
             <div id="root"></div>
