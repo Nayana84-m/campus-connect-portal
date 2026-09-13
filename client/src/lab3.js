@@ -123,5 +123,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 6. Role Portal Access Button Click Handler (Navigates to Login Form)
+    const portalBtns = document.querySelectorAll('.btn-portal');
+    portalBtns.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            let roleName = 'Student';
+            if (btn.classList.contains('faculty-bg') || btn.innerText.includes('Faculty')) {
+                roleName = 'Faculty';
+            } else if (btn.classList.contains('admin-bg') || btn.innerText.includes('Admin')) {
+                roleName = 'Admin';
+            }
+
+            // Dispatch custom role event to React AuthModule
+            window.dispatchEvent(new CustomEvent('roleSelect', { detail: { role: roleName } }));
+
+            // Smooth scroll to login section
+            const authElem = document.getElementById('authSection') || document.getElementById('login');
+            if (authElem) {
+                authElem.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
     updateNoticeCount();
 });
