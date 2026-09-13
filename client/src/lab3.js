@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. Role Portal Access Button Click Handler (Navigates to Login Form)
+    // 6. Role Portal Access Button Click Handler (Navigates to Student Portal or Login Form)
     const portalBtns = document.querySelectorAll('.btn-portal');
     portalBtns.forEach((btn) => {
         btn.addEventListener('click', (e) => {
@@ -133,6 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 roleName = 'Faculty';
             } else if (btn.classList.contains('admin-bg') || btn.innerText.includes('Admin')) {
                 roleName = 'Admin';
+            }
+
+            if (roleName === 'Student') {
+                window.location.hash = '#student';
+                const studentElem = document.getElementById('studentPortalSection');
+                if (studentElem) {
+                    studentElem.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
             }
 
             // Dispatch custom role event to React AuthModule
