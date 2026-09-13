@@ -94,7 +94,7 @@ export default function StudentPortal({ onBackToHome }) {
             </div>
           )}
 
-          {/* TAB 2: ASSIGNMENTS (Matches Photo 1) */}
+          {/* TAB 2: ASSIGNMENTS */}
           {activeTab === 'assignments' && (
             <div>
               <h3 style={styles.sectionHeading}>📝 Assignments &amp; Submissions</h3>
@@ -117,7 +117,7 @@ export default function StudentPortal({ onBackToHome }) {
             </div>
           )}
 
-          {/* TAB 3: TRACK ATTENDANCE (Matches Photo 3 & Photo 4 Code) */}
+          {/* TAB 3: TRACK ATTENDANCE */}
           {activeTab === 'attendance' && (
             <div>
               <h3 style={styles.sectionHeading}>📊 Attendance Tracker</h3>
@@ -134,7 +134,7 @@ export default function StudentPortal({ onBackToHome }) {
             </div>
           )}
 
-          {/* TAB 4: PROFILE (Matches Photo 2) */}
+          {/* TAB 4: PROFILE */}
           {activeTab === 'profile' && (
             <div>
               <h3 style={styles.sectionHeading}>👤 Student Profile</h3>
