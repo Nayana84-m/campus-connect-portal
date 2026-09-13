@@ -1,5 +1,4 @@
 // Campus Connect Portal - Student Portal Component (Lab 4 State Management)
-// Matches classroom reference photos for Assignments, Track Attendance, Profile, and Notices
 import { useState, useEffect } from 'react';
 
 export default function StudentPortal({ onBackToHome }) {
