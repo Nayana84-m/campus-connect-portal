@@ -1,10 +1,48 @@
-// Campus Connect Portal - Student Portal Component (Lab 4 State Management)
+// Campus Connect Portal - Student Portal Component (Experiment 6: RESTful API Integration)
+// Consumes backend Node.js & Express REST API (http://localhost:5000/api/assignments)
 import { useState, useEffect } from 'react';
 
 export default function StudentPortal({ onBackToHome }) {
   const [activeTab, setActiveTab] = useState('assignments'); // 'notices', 'assignments', 'attendance', 'profile'
+  const [assignmentsList, setAssignmentsList] = useState([
+    {
+      id: '1',
+      title: 'Lab Assignment 2: React State Management',
+      course: 'CS3301 - Full Stack',
+      dueDate: '2026-09-12',
+      status: 'Pending',
+      submittedBy: 'RVU Student'
+    },
+    {
+      id: '2',
+      title: 'ER Diagram Project Report',
+      course: 'CS3302 - DBMS',
+      dueDate: '2026-09-01',
+      status: 'Submitted',
+      submittedBy: 'RVU Student'
+    }
+  ]);
+  const [apiStatus, setApiStatus] = useState('Connecting to Express REST API...');
+  const [newTitle, setNewTitle] = useState('');
+  const [newCourse, setNewCourse] = useState('CS3301 - Full Stack');
+
+  // Fetch assignments from Express REST API
+  const fetchAssignments = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/assignments');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setAssignmentsList(json.data);
+        setApiStatus('🟢 Connected to Express REST API (http://localhost:5000)');
+      }
+    } catch (err) {
+      console.log('REST API Connection Notice:', err);
+      setApiStatus('⚡ Express Backend Server (http://localhost:5000)');
+    }
+  };
 
   useEffect(() => {
+    fetchAssignments();
     const handleHash = () => {
       if (window.location.hash === '#student') {
         setActiveTab('assignments');
@@ -22,6 +60,61 @@ export default function StudentPortal({ onBackToHome }) {
       const rolesElem = document.getElementById('roles');
       if (rolesElem) rolesElem.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // Toggle submission status via HTTP PUT REST request
+  const toggleSubmitStatus = async (item) => {
+    const newStatus = item.status === 'Pending' ? 'Submitted' : 'Pending';
+    try {
+      const res = await fetch(`http://localhost:5000/api/assignments/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setAssignmentsList((prev) =>
+          prev.map((a) => (a.id === item.id ? { ...a, status: newStatus } : a))
+        );
+      }
+    } catch (err) {
+      // Local state fallback if backend server isn't running
+      setAssignmentsList((prev) =>
+        prev.map((a) => (a.id === item.id ? { ...a, status: newStatus } : a))
+      );
+    }
+  };
+
+  // Post new assignment via HTTP POST REST request
+  const handleAddAssignment = async (e) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+
+    const payload = {
+      title: newTitle.trim(),
+      course: newCourse,
+      dueDate: new Date().toISOString().split('T')[0],
+      status: 'Submitted',
+      submittedBy: 'RVU Student'
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAssignmentsList((prev) => [json.data, ...prev]);
+      }
+    } catch (err) {
+      // Local state fallback
+      const newItem = { ...payload, id: Date.now().toString() };
+      setAssignmentsList((prev) => [newItem, ...prev]);
+    }
+
+    setNewTitle('');
   };
 
   return (
@@ -94,25 +187,61 @@ export default function StudentPortal({ onBackToHome }) {
             </div>
           )}
 
-          {/* TAB 2: ASSIGNMENTS */}
+          {/* TAB 2: ASSIGNMENTS (Consumes RESTful API Services - Experiment 6) */}
           {activeTab === 'assignments' && (
             <div>
-              <h3 style={styles.sectionHeading}>📝 Assignments &amp; Submissions</h3>
+              <div style={styles.apiHeaderRow}>
+                <h3 style={styles.sectionHeading}>📝 Assignments &amp; Submissions</h3>
+                <span style={styles.apiStatusBadge}>{apiStatus}</span>
+              </div>
+
+              {/* Submit New Assignment Form (HTTP POST API call) */}
+              <form onSubmit={handleAddAssignment} style={styles.addForm}>
+                <input
+                  type="text"
+                  placeholder="Enter new assignment title..."
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  style={styles.formInput}
+                  required
+                />
+                <select
+                  value={newCourse}
+                  onChange={(e) => setNewCourse(e.target.value)}
+                  style={styles.formSelect}
+                >
+                  <option value="CS3301 - Full Stack">CS3301 - Full Stack</option>
+                  <option value="CS3302 - DBMS">CS3302 - DBMS</option>
+                  <option value="CS3303 - Computer Networks">CS3303 - Networks</option>
+                </select>
+                <button type="submit" style={styles.formSubmitBtn}>
+                  + Submit Assignment (POST API)
+                </button>
+              </form>
+
+              {/* Assignments List */}
               <div style={styles.itemList}>
-                <div style={styles.itemCard}>
-                  <div>
-                    <h4 style={styles.itemTitle}>Lab Assignment 2: React State Management</h4>
-                    <p style={styles.itemSubtext}>CS3301 - Full Stack &bull; Due: Sept 12, 2026</p>
+                {assignmentsList.map((item) => (
+                  <div key={item.id} style={styles.itemCard}>
+                    <div>
+                      <h4 style={styles.itemTitle}>{item.title}</h4>
+                      <p style={styles.itemSubtext}>
+                        {item.course} &bull; Due: {item.dueDate}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => toggleSubmitStatus(item)}
+                      style={
+                        item.status === 'Submitted'
+                          ? styles.submittedBadgeBtn
+                          : styles.pendingBadgeBtn
+                      }
+                      title="Click to toggle submission status via HTTP PUT API"
+                    >
+                      {item.status} (Click to toggle)
+                    </button>
                   </div>
-                  <span style={styles.pendingBadge}>Pending</span>
-                </div>
-                <div style={styles.itemCard}>
-                  <div>
-                    <h4 style={styles.itemTitle}>ER Diagram Project Report</h4>
-                    <p style={styles.itemSubtext}>CS3302 - DBMS &bull; Due: Sept 01, 2026</p>
-                  </div>
-                  <span style={styles.submittedBadge}>Submitted</span>
-                </div>
+                ))}
               </div>
             </div>
           )}
@@ -228,11 +357,63 @@ const styles = {
   contentBody: {
     padding: '25px'
   },
+  apiHeaderRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '15px',
+    flexWrap: 'wrap',
+    gap: '10px'
+  },
   sectionHeading: {
     color: '#07182f',
     fontSize: '18px',
     fontWeight: '700',
-    marginBottom: '20px'
+    margin: 0
+  },
+  apiStatusBadge: {
+    backgroundColor: '#e0f2fe',
+    color: '#0369a1',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    fontSize: '12px',
+    fontWeight: '600',
+    border: '1px solid #bae6fd'
+  },
+  addForm: {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '20px',
+    flexWrap: 'wrap'
+  },
+  formInput: {
+    flex: '2',
+    minWidth: '200px',
+    padding: '10px 14px',
+    borderRadius: '6px',
+    border: '1px solid #cbd5e1',
+    fontSize: '13px',
+    outline: 'none'
+  },
+  formSelect: {
+    flex: '1',
+    minWidth: '150px',
+    padding: '10px 14px',
+    borderRadius: '6px',
+    border: '1px solid #cbd5e1',
+    fontSize: '13px',
+    outline: 'none',
+    backgroundColor: '#ffffff'
+  },
+  formSubmitBtn: {
+    backgroundColor: '#0d5c3a',
+    color: '#ffffff',
+    border: 'none',
+    padding: '10px 18px',
+    borderRadius: '6px',
+    fontWeight: '700',
+    fontSize: '13px',
+    cursor: 'pointer'
   },
   itemList: {
     display: 'flex',
@@ -259,21 +440,27 @@ const styles = {
     margin: '4px 0 0 0',
     fontSize: '13px'
   },
-  pendingBadge: {
+  pendingBadgeBtn: {
     backgroundColor: '#d6a11e',
     color: '#1f2937',
     padding: '6px 14px',
     borderRadius: '4px',
     fontWeight: '700',
-    fontSize: '12px'
+    fontSize: '12px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'transform 0.2s'
   },
-  submittedBadge: {
+  submittedBadgeBtn: {
     backgroundColor: '#107c41',
     color: '#ffffff',
     padding: '6px 14px',
     borderRadius: '4px',
     fontWeight: '700',
-    fontSize: '12px'
+    fontSize: '12px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'transform 0.2s'
   },
   grid: {
     display: 'flex',
