@@ -166,16 +166,6 @@ export default function AuthModule({ initialMode = 'login' }) {
           </button>
         </form>
       </div>
-
-      {/* Next Lab Module Placeholder (Lab 4 Extension Feature) */}
-      <div style={styles.nextLabPreview}>
-        <div style={styles.nextLabHeader}>
-          <h3>🚀 Next Lab Module Extension (LAB 4 Preview)</h3>
-          <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>
-            Ready for Lab 4: Form Validation, Session Storage & Dynamic Student Record Management API.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
