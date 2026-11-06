@@ -149,6 +149,26 @@ app.put('/api/assignments/:id', (req, res) => {
   });
 });
 
+// SUBMIT ASSIGNMENT: PUT /api/assignments/:id/submit (Specifically for Ma'am's syllabus route)
+app.put('/api/assignments/:id/submit', (req, res) => {
+  const index = assignments.findIndex((a) => a.id === req.params.id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      message: `Assignment with ID ${req.params.id} not found.`
+    });
+  }
+
+  assignments[index].status = 'Submitted';
+
+  res.status(200).json({
+    success: true,
+    message: `Assignment ${req.params.id} marked as Submitted`,
+    data: assignments[index]
+  });
+});
+
 // DELETE: DELETE /api/assignments/:id (Removes an assignment by ID)
 app.delete('/api/assignments/:id', (req, res) => {
   const index = assignments.findIndex((a) => a.id === req.params.id);
