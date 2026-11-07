@@ -1,12 +1,10 @@
-// LAB 3: DOM Selection, Event Handling & Manipulation
-// Handles real-time input preview, element styling, and adding/removing list items without page reload.
+// Handles portal navigation and role selection for the Campus Connect landing page.
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Role Portal Access Button Click Handler (Navigates to Student, Faculty, or Admin Portal)
     const portalBtns = document.querySelectorAll('.btn-portal');
     portalBtns.forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
+        btn.addEventListener('click', () => {
             let roleName = 'student';
             if (btn.classList.contains('faculty-bg') || btn.innerText.includes('Faculty')) {
                 roleName = 'faculty';
@@ -34,14 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const navRegister = document.querySelector('a[href="#register"]');
 
     if (navLogin) {
-        navLogin.addEventListener('click', (e) => {
+        navLogin.addEventListener('click', () => {
             window.location.hash = '#login';
             window.dispatchEvent(new CustomEvent('switchPortal', { detail: { role: 'auth' } }));
         });
     }
 
     if (navRegister) {
-        navRegister.addEventListener('click', (e) => {
+        navRegister.addEventListener('click', () => {
             window.location.hash = '#register';
             window.dispatchEvent(new CustomEvent('switchPortal', { detail: { role: 'auth' } }));
         });

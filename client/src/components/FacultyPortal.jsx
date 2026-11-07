@@ -12,7 +12,7 @@ export default function FacultyPortal({ onBackToHome }) {
 
   const [newAssignment, setNewAssignment] = useState({ title: '', course: 'CS3301 - Full Stack', dueDate: '' });
   const [createdAssignments, setCreatedAssignments] = useState([
-    { id: 1, title: 'Lab 6: RESTful API Express Server', course: 'CS3301 - Full Stack', dueDate: '2026-10-10' },
+    { id: 1, title: 'RESTful API Express Server', course: 'CS3301 - Full Stack', dueDate: '2026-10-10' },
     { id: 2, title: 'Assignment 3: MongoDB Schema Design', course: 'CS3302 - DBMS', dueDate: '2026-10-18' }
   ]);
 
@@ -108,7 +108,7 @@ export default function FacultyPortal({ onBackToHome }) {
               <form onSubmit={handleCreateAssignment} style={styles.formRow}>
                 <input
                   type="text"
-                  placeholder="Assignment title (e.g. Lab 7: MongoDB Queries)..."
+                  placeholder="Assignment title (e.g. MongoDB Queries)..."
                   value={newAssignment.title}
                   onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
                   style={styles.input}
@@ -216,7 +216,7 @@ export default function FacultyPortal({ onBackToHome }) {
                 <div style={styles.cardItem}>
                   <div>
                     <strong>Nayana M (1RV23CS001)</strong>
-                    <p style={styles.subText}>Lab Assignment 2: React State Management &bull; Submitted on Time</p>
+                    <p style={styles.subText}>React State Management &bull; Submitted on Time</p>
                   </div>
                   <span style={styles.badgeGreen}>Submitted & Verified</span>
                 </div>
@@ -230,7 +230,7 @@ export default function FacultyPortal({ onBackToHome }) {
                 <div style={styles.cardItem}>
                   <div>
                     <strong>Kiran Kumar (1RV23CS003)</strong>
-                    <p style={styles.subText}>Lab 6: RESTful API Express Server &bull; Pending</p>
+                    <p style={styles.subText}>RESTful API Express Server &bull; Pending</p>
                   </div>
                   <span style={styles.badgeYellow}>Pending Review</span>
                 </div>

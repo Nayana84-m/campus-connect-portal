@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 export default function AuthModule({ initialMode = 'login' }) {
-  const [isLogin, setIsLogin] = useState(initialMode === 'login');
+  const [isLogin, setIsLogin] = useState(() => window.location.hash !== '#register' && initialMode === 'login');
   const [role, setRole] = useState('Student');
   const [message, setMessage] = useState('');
 
@@ -37,12 +37,6 @@ export default function AuthModule({ initialMode = 'login' }) {
 
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('roleSelect', handleRoleSelect);
-
-    if (window.location.hash === '#register') {
-      setIsLogin(false);
-    } else if (window.location.hash === '#login') {
-      setIsLogin(true);
-    }
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);

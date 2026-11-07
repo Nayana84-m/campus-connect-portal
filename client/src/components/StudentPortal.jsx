@@ -1,13 +1,14 @@
-// Campus Connect Portal - Student Portal Component (Experiment 6: RESTful API Integration)
-// Consumes backend Node.js & Express REST API (http://localhost:5000/api/assignments)
+// Student assignment portal connected to the Campus Connect API.
 import { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function StudentPortal({ onBackToHome }) {
   const [activeTab, setActiveTab] = useState('assignments'); // 'notices', 'assignments', 'attendance', 'profile'
   const [assignmentsList, setAssignmentsList] = useState([
     {
       id: '1',
-      title: 'Lab Assignment 2: React State Management',
+      title: 'React State Management',
       course: 'CS3301 - Full Stack',
       dueDate: '2026-09-12',
       status: 'Pending',
@@ -26,30 +27,32 @@ export default function StudentPortal({ onBackToHome }) {
   const [newTitle, setNewTitle] = useState('');
   const [newCourse, setNewCourse] = useState('CS3301 - Full Stack');
 
-  // Fetch assignments from Express REST API
-  const fetchAssignments = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/assignments');
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        setAssignmentsList(json.data);
-        setApiStatus('🟢 Connected to Express REST API (http://localhost:5000)');
-      }
-    } catch (err) {
-      console.log('REST API Connection Notice:', err);
-      setApiStatus('⚡ Express Backend Server (http://localhost:5000)');
-    }
-  };
-
   useEffect(() => {
-    fetchAssignments();
+    let cancelled = false;
+    const loadAssignments = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/assignments`);
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Unable to load assignments');
+        if (!cancelled) {
+          setAssignmentsList(json.data);
+          setApiStatus('🟢 Connected to the Campus Connect API');
+        }
+      } catch {
+        if (!cancelled) setApiStatus('🔴 Backend unavailable. Check the server connection.');
+      }
+    };
+    loadAssignments();
     const handleHash = () => {
       if (window.location.hash === '#student') {
         setActiveTab('assignments');
       }
     };
     window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('hashchange', handleHash);
+    };
   }, []);
 
   const handleBack = () => {
@@ -66,7 +69,7 @@ export default function StudentPortal({ onBackToHome }) {
   const toggleSubmitStatus = async (item) => {
     const newStatus = item.status === 'Pending' ? 'Submitted' : 'Pending';
     try {
-      const res = await fetch(`http://localhost:5000/api/assignments/${item.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/assignments/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -77,11 +80,8 @@ export default function StudentPortal({ onBackToHome }) {
           prev.map((a) => (a.id === item.id ? { ...a, status: newStatus } : a))
         );
       }
-    } catch (err) {
-      // Local state fallback if backend server isn't running
-      setAssignmentsList((prev) =>
-        prev.map((a) => (a.id === item.id ? { ...a, status: newStatus } : a))
-      );
+    } catch {
+      setApiStatus('🔴 Update failed. Check the backend connection.');
     }
   };
 
@@ -99,22 +99,30 @@ export default function StudentPortal({ onBackToHome }) {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/assignments', {
+      const res = await fetch(`${API_BASE_URL}/api/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const json = await res.json();
-      if (json.success && json.data) {
-        setAssignmentsList((prev) => [json.data, ...prev]);
-      }
-    } catch (err) {
-      // Local state fallback
-      const newItem = { ...payload, id: Date.now().toString() };
-      setAssignmentsList((prev) => [newItem, ...prev]);
+      if (!res.ok || !json.success || !json.data) throw new Error(json.message || 'Unable to save assignment');
+      setAssignmentsList((prev) => [json.data, ...prev]);
+    } catch {
+      setApiStatus('🔴 Save failed. Check the backend connection.');
     }
 
     setNewTitle('');
+  };
+
+  const handleDeleteAssignment = async (item) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/assignments/${item.id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.message || 'Unable to delete assignment');
+      setAssignmentsList((prev) => prev.filter((assignment) => assignment.id !== item.id));
+    } catch {
+      setApiStatus('🔴 Delete failed. Check the backend connection.');
+    }
   };
 
   return (
@@ -187,7 +195,7 @@ export default function StudentPortal({ onBackToHome }) {
             </div>
           )}
 
-          {/* TAB 2: ASSIGNMENTS (Consumes RESTful API Services - Experiment 6) */}
+          {/* Assignment management connected to the backend API */}
           {activeTab === 'assignments' && (
             <div>
               <div style={styles.apiHeaderRow}>
@@ -229,17 +237,26 @@ export default function StudentPortal({ onBackToHome }) {
                         {item.course} &bull; Due: {item.dueDate}
                       </p>
                     </div>
-                    <button
-                      onClick={() => toggleSubmitStatus(item)}
-                      style={
-                        item.status === 'Submitted'
-                          ? styles.submittedBadgeBtn
-                          : styles.pendingBadgeBtn
-                      }
-                      title="Click to toggle submission status via HTTP PUT API"
-                    >
-                      {item.status} (Click to toggle)
-                    </button>
+                    <div style={styles.actionButtons}>
+                      <button
+                        onClick={() => toggleSubmitStatus(item)}
+                        style={
+                          item.status === 'Submitted'
+                            ? styles.submittedBadgeBtn
+                            : styles.pendingBadgeBtn
+                        }
+                        title="Update submission status"
+                      >
+                        {item.status} (Update)
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAssignment(item)}
+                        style={styles.deleteBtn}
+                        title="Delete assignment"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -429,6 +446,13 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  actionButtons: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end'
+  },
   itemTitle: {
     color: '#1e293b',
     margin: 0,
@@ -461,6 +485,16 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'transform 0.2s'
+  },
+  deleteBtn: {
+    backgroundColor: '#b91c1c',
+    color: '#ffffff',
+    padding: '6px 14px',
+    borderRadius: '4px',
+    fontWeight: '700',
+    fontSize: '12px',
+    border: 'none',
+    cursor: 'pointer'
   },
   grid: {
     display: 'flex',
